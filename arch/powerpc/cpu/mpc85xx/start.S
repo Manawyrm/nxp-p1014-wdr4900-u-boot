@@ -166,8 +166,55 @@ bootsect:
 
 	.section .bootpg,"ax"
 	.globl _start
+/*
+#define cat_debug(r1_, r2_, v) \
+	lis     r1_,-144; \
+	ori     r1_,r1_,17664; \
+	li      r2_,v; \
+	stb     r2_,0(r1_)
+*/
+#define cat_debug(r1_, r2_, v)
 
 _start:
+
+nop
+lis     r9,-144
+ori     r9,r9,17667
+li      r10,-125
+stb     r10,0(r9)
+lis     r9,-144
+ori     r9,r9,17664
+li      r10,-39
+stb     r10,0(r9)
+lis     r9,-144
+ori     r9,r9,17667
+li      r10,3
+stb     r10,0(r9)
+lis     r9,-144
+ori     r9,r9,17666
+li      r10,7
+stb     r10,0(r9)
+nop
+lis     r9,-144
+ori     r9,r9,17664
+li      r10,109
+stb     r10,0(r9)
+lis     r9,-144
+ori     r9,r9,17664
+li      r10,101
+stb     r10,0(r9)
+lis     r9,-144
+ori     r9,r9,17664
+li      r10,111
+stb     r10,0(r9)
+lis     r9,-144
+ori     r9,r9,17664
+li      r10,119
+stb     r10,0(r9)
+nop
+
+cat_debug(r9, r10, 113)
+
 /* Enable debug exception */
 	li	r1,MSR_DE
 	mtmsr	r1
@@ -257,7 +304,7 @@ l2_disabled:
 #endif
 
 /* clear registers/arrays not reset by hardware */
-
+cat_debug(r0, r1, 114)
 	/* L1 */
 	li	r0,2
 	mtspr	L1CSR0,r0	/* invalidate d-cache */
@@ -437,6 +484,7 @@ l2_disabled:
 	mtspr	DBCR0,r0
 #endif
 
+cat_debug(r2, r3, 115)
 /*
  * Search for the TLB that covers the code we're executing, and shrink it
  * so that it covers only this 4K page.  That will ensure that any other
@@ -448,13 +496,18 @@ l2_disabled:
  * which (oddly) creates a single 4GB TLB that covers CCSR and DDR.
  */
 	bl	nexti		/* Find our address */
-nexti:	mflr	r1		/* R1 = our PC */
+nexti:	cat_debug(r2, r3, 116)
+	mflr	r1		/* R1 = our PC */
+
+	cat_debug(r2, r3, 48)
 	li	r2, 0
 	mtspr	MAS6, r2	/* Assume the current PID and AS are 0 */
+	cat_debug(r2, r3, 49)
 	isync
 	msync
+	cat_debug(r2, r3, 50)
 	tlbsx	0, r1		/* This must succeed */
-
+	cat_debug(r2, r3, 51)
 	mfspr	r14, MAS0	/* Save ESEL for later */
 	rlwinm	r14, r14, 16, 0xfff
 
@@ -466,6 +519,7 @@ nexti:	mflr	r1		/* R1 = our PC */
 	oris	r3, r3, MAS1_IPROT@h
 	mtspr	MAS1, r3
 
+	cat_debug(r2, r3, 49)
 	/*
 	 * Set the base address of the TLB to our PC.  We assume that
 	 * virtual == physical.  We also assume that MAS2_EPN == MAS3_RPN.
@@ -486,16 +540,21 @@ nexti:	mflr	r1		/* R1 = our PC */
 	ori	r2, r2, MAS2_G
 1:
 #endif
+
 	mtspr	MAS2, r2	/* Set the EPN to our PC base address */
+
+	cat_debug(r2,r4,50)
 
 	mfspr	r2, MAS3
 	andc	r2, r2, r3
 	or	r2, r2, r1
 	mtspr	MAS3, r2	/* Set the RPN to our PC base address */
 
+	cat_debug(r2, r4, 51)
 	isync
 	msync
 	tlbwe
+//cat_debug(r0, r4, 49)
 
 /*
  * Clear out any other TLB entries that may exist, to avoid conflicts.
@@ -504,7 +563,7 @@ nexti:	mflr	r1		/* R1 = our PC */
 	li	r0, TLBIVAX_ALL | TLBIVAX_TLB0
 	tlbivax 0, r0
 	tlbsync
-
+	cat_debug(r2, r4, 52)
 	mfspr	r4, SPRN_TLB1CFG
 	rlwinm	r4, r4, 0, TLBnCFG_NENTRY_MASK
 
@@ -523,8 +582,27 @@ nexti:	mflr	r1		/* R1 = our PC */
 	isync
 	msync
 
+	cat_debug(r2, r5, 51)
+
 2:	cmpw	r3, r4
 	blt	1b
+
+        create_tlb1_entry CONFIG_SYS_PPC_E500_DEBUG_TLB, \
+                0, BOOKE_PAGESZ_4M, \
+                0xff700000,  MAS2_I|MAS2_G, \
+                0xff700000, MAS3_SX|MAS3_SW|MAS3_SR, \
+                0, r6
+
+        create_tlb1_entry 13, \
+                1, BOOKE_PAGESZ_4M, \
+                0xff700000,  MAS2_I|MAS2_G, \
+                0xff700000, MAS3_SX|MAS3_SW|MAS3_SR, \
+                0, r6
+
+lis     r9,-144
+ori     r9,r9,17664
+li      r10,109
+stb     r10,0(r9)
 
 #if defined(CONFIG_SYS_PPC_E500_DEBUG_TLB) && !defined(MINIMAL_SPL) && \
 	!defined(CONFIG_NXP_ESBC)
@@ -542,25 +620,37 @@ nexti:	mflr	r1		/* R1 = our PC */
  * bacause flash's virtual address maps to 0xff800000 - 0xffffffff.
  * and this window is outside of 4K boot window.
  */
-	create_tlb1_entry CONFIG_SYS_PPC_E500_DEBUG_TLB, \
+/*	create_tlb1_entry CONFIG_SYS_PPC_E500_DEBUG_TLB, \
 		0, BOOKE_PAGESZ_4M, \
 		CONFIG_VAL(SYS_MONITOR_BASE) & 0xffc00000,  MAS2_I|MAS2_G, \
 		0xffc00000, MAS3_SX|MAS3_SW|MAS3_SR, \
 		0, r6
-
+*/
 #else
 /*
  * TLB entry is created for IVPR + IVOR15 to map on valid OP code address
  * because "nexti" will resize TLB to 4K
  */
-	create_tlb1_entry CONFIG_SYS_PPC_E500_DEBUG_TLB, \
+/*	create_tlb1_entry CONFIG_SYS_PPC_E500_DEBUG_TLB, \
 		0, BOOKE_PAGESZ_256K, \
 		CONFIG_VAL(SYS_MONITOR_BASE) & 0xfffc0000, MAS2_I, \
 		CONFIG_VAL(SYS_MONITOR_BASE) & 0xfffc0000, MAS3_SX|MAS3_SW|MAS3_SR, \
 		0, r6
+*/
 #endif
 #endif
 
+#define cat_debug(r1_, r2_, v) \
+	andi.   r1_,r1_,0; \
+	andi.   r2_,r2_,0; \
+        lis     r1_,-144; \
+        ori     r1_,r1_,17664; \
+        li      r2_,v; \
+        stb     r2_,0(r1_)
+
+//#define cat_debug(r1_, r2_, v)
+
+cat_debug(r9, r10, 116)
 /*
  * Relocate CCSR, if necessary.  We relocate CCSR if (obviously) the default
  * location is not where we want it.  This typically happens on a 36-bit
@@ -578,7 +668,7 @@ nexti:	mflr	r1		/* R1 = our PC */
 #if !defined(CFG_SYS_CCSRBAR_PHYS_HIGH) || !defined(CFG_SYS_CCSRBAR_PHYS_LOW)
 #error "CFG_SYS_CCSRBAR_PHYS_HIGH and CFG_SYS_CCSRBAR_PHYS_LOW) must be defined."
 #endif
-
+	cat_debug(r2, r3, 117)
 create_ccsr_new_tlb:
 	/*
 	 * Create a TLB for the new location of CCSR.  Register R8 is reserved
@@ -630,6 +720,7 @@ verify_old_ccsr:
 	 * on.
 	 */
 infinite_debug_loop:
+	cat_debug(r9,r10,0x41)
 	bne	infinite_debug_loop
 
 #ifdef CONFIG_FSL_CORENET
@@ -827,6 +918,8 @@ delete_ccsr_l2_tlb:
 	mtspr	L1CSR2,r2
 #endif
 
+	cat_debug(r9,r10,117)
+
 	/* Enable/invalidate the I-Cache */
 	lis	r2,(L1CSR1_ICFI|L1CSR1_ICLFR)@h
 	ori	r2,r2,(L1CSR1_ICFI|L1CSR1_ICLFR)@l
@@ -845,6 +938,8 @@ delete_ccsr_l2_tlb:
 	andi.	r1,r3,L1CSR1_ICE@l
 	beq	2b
 
+        cat_debug(r9,r10,118)
+
 	/* Enable/invalidate the D-Cache */
 	lis	r2,(L1CSR0_DCFI|L1CSR0_DCLFR)@h
 	ori	r2,r2,(L1CSR0_DCFI|L1CSR0_DCLFR)@l
@@ -862,6 +957,9 @@ delete_ccsr_l2_tlb:
 	mfspr	r3,SPRN_L1CSR0
 	andi.	r1,r3,L1CSR0_DCE@l
 	beq	2b
+
+        cat_debug(r9,r10,119)
+
 #ifdef CONFIG_SYS_FSL_ERRATUM_A004510
 #define DCSR_LAWBARH0	(CFG_SYS_CCSRBAR + 0x1000)
 #define LAW_SIZE_1M	0x13
@@ -1113,6 +1211,8 @@ erratum_set_value:
 9:
 #endif
 
+	cat_debug(r9,r10,120)
+
 create_init_ram_area:
 	lis     r6,FSL_BOOKE_MAS0(1, 15, 0)@h
 	ori     r6,r6,FSL_BOOKE_MAS0(1, 15, 0)@l
@@ -1134,6 +1234,8 @@ create_init_ram_area:
 		CONFIG_VAL(SYS_MONITOR_BASE) & 0xfff00000, MAS2_I|MAS2_G, \
 		CFG_SYS_PBI_FLASH_WINDOW & 0xfff00000, MAS3_SX|MAS3_SW|MAS3_SR, \
 		0, r6
+
+	cat_debug(r9,r10,121)
 
 /*
  * For Targets without CONFIG_SPL like P3, P5
@@ -1163,6 +1265,8 @@ create_init_ram_area:
 		0, r6
 #endif
 
+	cat_debug(r9,r10,122)
+
 	/* create a temp mapping in AS=1 to the stack */
 #if defined(CFG_SYS_INIT_RAM_ADDR_PHYS_LOW) && \
     defined(CFG_SYS_INIT_RAM_ADDR_PHYS_HIGH)
@@ -1180,6 +1284,8 @@ create_init_ram_area:
 		0, r6
 #endif
 
+	cat_debug(r9,r10,48)
+
 	lis	r6,MSR_IS|MSR_DS|MSR_DE@h
 	ori	r6,r6,MSR_IS|MSR_DS|MSR_DE@l
 	lis	r7,switch_as@h
@@ -1191,6 +1297,7 @@ create_init_ram_area:
 
 switch_as:
 /* L1 DCache is used for initial RAM */
+	cat_debug(r9,r10,49)
 
 	/* Allocate Initial RAM in data cache.
 	 */
@@ -1213,11 +1320,15 @@ switch_as:
 	addi	r3,r3,CONFIG_SYS_CACHELINE_SIZE
 	bdnz	1b
 
+	cat_debug(r9,r10,50)
+
 	/* Jump out the last 4K page and continue to 'normal' start */
 #if defined(CONFIG_SYS_RAMBOOT) || defined(CONFIG_SPL)
 	/* We assume that we're already running at the address we're linked at */
+	cat_debug(r9,r10,51)
 	b	_start_cont
 #else
+	cat_debug(r9,r10,51)
 	/* Calculate absolute address in FLASH and jump there		*/
 	/*--------------------------------------------------------------*/
 	lis	r3,_start_cont@h
@@ -1229,6 +1340,7 @@ switch_as:
 	.text
 	.globl	_start_cont
 _start_cont:
+	cat_debug(r9,r10,52)
 	/* Setup the stack in initial RAM,could be L2-as-SRAM or L1 dcache*/
 	lis	r3,(CFG_SYS_INIT_RAM_ADDR)@h
 	ori	r3,r3,((CFG_SYS_INIT_SP_OFFSET-16)&~0xf)@l /* Align to 16 */
@@ -1274,7 +1386,11 @@ _start_cont:
 	/* Pass our potential ePAPR device tree pointer to cpu_init_early_f */
 	mr	r3, r24
 
+	cat_debug(r9,r10,52)
+
 	bl	cpu_init_early_f
+
+	cat_debug(r9,r10,53)
 
 	/* switch back to AS = 0 */
 	lis	r3,(MSR_CE|MSR_ME|MSR_DE)@h
@@ -1282,7 +1398,12 @@ _start_cont:
 	mtmsr	r3
 	isync
 
+	cat_debug(r9,r10,54)
+
 	bl	cpu_init_f	/* return boot_flag for calling board_init_f */
+
+	cat_debug(r9,r10,55)
+
 	bl	board_init_f
 	isync
 

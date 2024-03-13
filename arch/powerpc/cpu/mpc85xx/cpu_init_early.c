@@ -83,6 +83,9 @@ void setup_ifc(void)
 /* We run cpu_init_early_f in AS = 1 */
 void cpu_init_early_f(void *fdt)
 {
+        #define _MMIO_BYTE(mem_addr) (*(volatile unsigned char *)(mem_addr))
+        _MMIO_BYTE(0xFF704500) = 'i';
+
 	u32 mas0, mas1, mas2, mas3, mas7;
 #ifdef CONFIG_SYS_FSL_ERRATUM_P1010_A003549
 	ccsr_gur_t *gur = (void *)(CFG_SYS_MPC85xx_GUTS_ADDR);
@@ -107,13 +110,14 @@ void cpu_init_early_f(void *fdt)
 	gd->fdt_blob = fdt;
 #endif
 
-	mas0 = MAS0_TLBSEL(1) | MAS0_ESEL(13);
+/*	mas0 = MAS0_TLBSEL(1) | MAS0_ESEL(13);
 	mas1 = MAS1_VALID | MAS1_TID(0) | MAS1_TS | MAS1_TSIZE(BOOKE_PAGESZ_1M);
 	mas2 = FSL_BOOKE_MAS2(CFG_SYS_CCSRBAR, MAS2_I|MAS2_G);
 	mas3 = FSL_BOOKE_MAS3(CFG_SYS_CCSRBAR_PHYS, 0, MAS3_SW|MAS3_SR);
 	mas7 = FSL_BOOKE_MAS7(CFG_SYS_CCSRBAR_PHYS);
 
 	write_tlb(mas0, mas1, mas2, mas3, mas7);
+*/
 
 /*
  * Work Around for IFC Erratum A-003549. This issue is P1010
@@ -123,11 +127,11 @@ void cpu_init_early_f(void *fdt)
 #ifdef CONFIG_SYS_FSL_ERRATUM_P1010_A003549
 	setbits_be32(&gur->pmuxcr, MPC85xx_PMUXCR_LCLK_IFC_CS3);
 #endif
-
+_MMIO_BYTE(0xFF704500) = '2';
 #ifdef CONFIG_FSL_LAW
 	init_laws();
 #endif
-
+_MMIO_BYTE(0xFF704500) = '3';
 /*
  * Work Around for IFC Erratum A003399, issue will hit only when execution
  * from NOR Flash
@@ -176,12 +180,13 @@ void cpu_init_early_f(void *fdt)
 #endif
 
 	invalidate_tlb(1);
-
+_MMIO_BYTE(0xFF704500) = '4';
 #if defined(CONFIG_SYS_PPC_E500_DEBUG_TLB) && \
 	!(CONFIG_IS_ENABLED(INIT_MINIMAL) && defined(CONFIG_SPL_BUILD)) && \
 	!defined(CONFIG_NAND_SPL)
-	disable_tlb(CONFIG_SYS_PPC_E500_DEBUG_TLB);
+	//disable_tlb(CONFIG_SYS_PPC_E500_DEBUG_TLB);
 #endif
 
 	init_tlbs();
+_MMIO_BYTE(0xFF704500) = '5';
 }
