@@ -112,7 +112,8 @@ void cpu_init_early_f(void *fdt)
 	gd->fdt_blob = fdt;
 #endif
 
-/*	mas0 = MAS0_TLBSEL(1) | MAS0_ESEL(13);
+/*
+	mas0 = MAS0_TLBSEL(1) | MAS0_ESEL(13);
 	mas1 = MAS1_VALID | MAS1_TID(0) | MAS1_TS | MAS1_TSIZE(BOOKE_PAGESZ_1M);
 	mas2 = FSL_BOOKE_MAS2(CFG_SYS_CCSRBAR, MAS2_I|MAS2_G);
 	mas3 = FSL_BOOKE_MAS3(CFG_SYS_CCSRBAR_PHYS, 0, MAS3_SW|MAS3_SR);

@@ -250,6 +250,8 @@ uint64_t tlb_map_range(ulong v_addr, phys_addr_t p_addr, uint64_t size,
 	unsigned int perm;
 	unsigned int max_cam, tsize_mask;
 
+	printf("%s: map_type %d\n", __func__, map_type);
+
 	if (map_type == TLB_MAP_RAM) {
 		perm = MAS3_SX|MAS3_SW|MAS3_SR;
 		wimge = MAS2_M;
@@ -260,6 +262,9 @@ uint64_t tlb_map_range(ulong v_addr, phys_addr_t p_addr, uint64_t size,
 		perm = MAS3_SW|MAS3_SR;
 		wimge = MAS2_I|MAS2_G;
 	}
+
+	// Hack: Force memory coherency, guard and cache-inhibit DDR
+	wimge = MAS2_M|MAS2_I|MAS2_G;
 
 	if ((mfspr(SPRN_MMUCFG) & MMUCFG_MAVN) == MMUCFG_MAVN_V1) {
 		/* Convert (4^max) kB to (2^max) bytes */

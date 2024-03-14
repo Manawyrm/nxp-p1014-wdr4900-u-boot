@@ -166,14 +166,16 @@ bootsect:
 
 	.section .bootpg,"ax"
 	.globl _start
-/*
-#define cat_debug(r1_, r2_, v) \
-	lis     r1_,-144; \
-	ori     r1_,r1_,17664; \
-	li      r2_,v; \
-	stb     r2_,0(r1_)
-*/
-#define cat_debug(r1_, r2_, v)
+
+#ifndef CONFIG_SPL_BUILD
+	#define cat_debug(r1_, r2_, v) \
+		lis     r1_,-144; \
+		ori     r1_,r1_,17664; \
+		li      r2_,v; \
+		stb     r2_,0(r1_)
+#else
+	#define cat_debug(r1_, r2_, v)
+#endif
 
 _start:
 
@@ -209,7 +211,11 @@ li      r10,111
 stb     r10,0(r9)
 lis     r9,-144
 ori     r9,r9,17664
-li      r10,119
+#ifdef CONFIG_SPL_BUILD
+li      r10,83
+#else
+li      r10,85
+#endif
 stb     r10,0(r9)
 nop
 
@@ -485,6 +491,8 @@ cat_debug(r0, r1, 114)
 #endif
 
 cat_debug(r2, r3, 115)
+
+//#ifdef CONFIG_SPL_BUILD
 /*
  * Search for the TLB that covers the code we're executing, and shrink it
  * so that it covers only this 4K page.  That will ensure that any other
@@ -507,7 +515,6 @@ nexti:	cat_debug(r2, r3, 116)
 	msync
 	cat_debug(r2, r3, 50)
 	tlbsx	0, r1		/* This must succeed */
-	cat_debug(r2, r3, 51)
 	mfspr	r14, MAS0	/* Save ESEL for later */
 	rlwinm	r14, r14, 16, 0xfff
 
@@ -519,7 +526,6 @@ nexti:	cat_debug(r2, r3, 116)
 	oris	r3, r3, MAS1_IPROT@h
 	mtspr	MAS1, r3
 
-	cat_debug(r2, r3, 49)
 	/*
 	 * Set the base address of the TLB to our PC.  We assume that
 	 * virtual == physical.  We also assume that MAS2_EPN == MAS3_RPN.
@@ -543,14 +549,11 @@ nexti:	cat_debug(r2, r3, 116)
 
 	mtspr	MAS2, r2	/* Set the EPN to our PC base address */
 
-	cat_debug(r2,r4,50)
-
 	mfspr	r2, MAS3
 	andc	r2, r2, r3
 	or	r2, r2, r1
 	mtspr	MAS3, r2	/* Set the RPN to our PC base address */
 
-	cat_debug(r2, r4, 51)
 	isync
 	msync
 	tlbwe
@@ -563,7 +566,6 @@ nexti:	cat_debug(r2, r3, 116)
 	li	r0, TLBIVAX_ALL | TLBIVAX_TLB0
 	tlbivax 0, r0
 	tlbsync
-	cat_debug(r2, r4, 52)
 	mfspr	r4, SPRN_TLB1CFG
 	rlwinm	r4, r4, 0, TLBnCFG_NENTRY_MASK
 
@@ -582,11 +584,9 @@ nexti:	cat_debug(r2, r3, 116)
 	isync
 	msync
 
-	cat_debug(r2, r5, 51)
-
 2:	cmpw	r3, r4
 	blt	1b
-
+//#endif
         create_tlb1_entry CONFIG_SYS_PPC_E500_DEBUG_TLB, \
                 0, BOOKE_PAGESZ_4M, \
                 0xff700000,  MAS2_I|MAS2_G, \
