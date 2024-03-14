@@ -45,6 +45,8 @@ void fsl_ddr_set_lawbar(
 		unsigned int ctrl_num);
 #endif
 
+#define DEBUG 1
+
 void fsl_ddr_set_intl3r(const unsigned int granule_size);
 #if defined(SPD_EEPROM_ADDRESS) || \
     defined(SPD_EEPROM_ADDRESS1) || defined(SPD_EEPROM_ADDRESS2) || \

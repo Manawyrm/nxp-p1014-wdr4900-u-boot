@@ -78,7 +78,7 @@ void board_init_r(gd_t *gd, ulong dest_addr)
 	gd->flags |= GD_FLG_FULL_MALLOC_INIT;
 
 #ifndef CONFIG_SPL_NAND_BOOT
-	env_init();
+//	env_init();
 #endif
 #ifdef CONFIG_SPL_MMC_BOOT
 	mmc_initialize(bd);
@@ -91,7 +91,7 @@ void board_init_r(gd_t *gd, ulong dest_addr)
 			    gd->env_addr  = (ulong)(SPL_ENV_ADDR);
 	gd->env_valid = ENV_VALID;
 #else
-	env_relocate();
+//	env_relocate();
 #endif
 
 	i2c_init_all();

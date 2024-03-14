@@ -64,13 +64,15 @@ void fsl_spi_boot(void)
 
 	spi_flash_read(flash, CFG_CFG_DATA_SECTOR,
 		       flash->page_size, (void *)buf);
-	offset = *(u32 *)(buf + ESPI_BOOT_IMAGE_ADDR);
+	//offset = *(u32 *)(buf + ESPI_BOOT_IMAGE_ADDR);
+	offset = 0;
 	/* Skip spl code */
 	offset += CFG_SYS_SPI_FLASH_U_BOOT_OFFS;
 	/* Get the code size from offset 0x48 */
 	code_len = *(u32 *)(buf + ESPI_BOOT_IMAGE_SIZE);
+	code_len = (1 * 1024 * 1024);
 	/* Skip spl code */
-	code_len = code_len - CONFIG_SPL_MAX_SIZE;
+	//code_len = code_len - CONFIG_SPL_MAX_SIZE;
 #endif
 	/* copy code to DDR */
 	printf("Loading second stage boot loader ");

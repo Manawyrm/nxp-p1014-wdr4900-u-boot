@@ -84,6 +84,8 @@ void setup_ifc(void)
 void cpu_init_early_f(void *fdt)
 {
         #define _MMIO_BYTE(mem_addr) (*(volatile unsigned char *)(mem_addr))
+	while (!(_MMIO_BYTE(0xFF704505) & (1 << 6))) {}
+
         _MMIO_BYTE(0xFF704500) = 'i';
 
 	u32 mas0, mas1, mas2, mas3, mas7;
