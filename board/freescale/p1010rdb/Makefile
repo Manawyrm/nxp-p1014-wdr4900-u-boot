@@ -24,3 +24,10 @@ endif
 
 obj-y	+= law.o
 obj-y	+= tlb.o
+
+obj-y	+= training/microrl.o
+obj-y	+= training/training.o
+obj-y	+= training/registers.o
+obj-y	+= training/memtest.o
+obj-y	+= training/chainload.o
+obj-y	+= ../../../lib/sscanf.o

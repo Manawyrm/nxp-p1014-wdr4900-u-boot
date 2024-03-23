@@ -19,35 +19,35 @@ DECLARE_GLOBAL_DATA_PTR;
 ///*
 // * Samsung K4B4G1646E
 // */
-//dimm_params_t ddr_raw_timing = {
-//.n_ranks = 1,
-//.rank_density = 512ul * 1024ul * 1024ul,
-//.capacity = 512ul * 1024ul * 1024ul,
-//.primary_sdram_width = 32,
-//.ec_sdram_width = 0,
-//.registered_dimm = 0,
-//.mirrored_dimm = 0,
-//.n_row_addr = 15,
-//.n_col_addr = 10,
-//.n_banks_per_sdram_device = 8,
-//.edc_config = 0,
-//.burst_lengths_bitmask = 0x0c,
-//
-//.tckmin_x_ps = 2500,
-//	.caslat_x = 0x1e << 4,	/* 5,6,7,8 */ /// 6 waere hier richtig! ??? Debugging!
-//.taa_ps = 15000,
-//.twr_ps = 15000,
-//.trcd_ps = 15000,
-//.trrd_ps = 10000,
-//.trp_ps = 15000,
-//.tras_ps = 37500,
-//.trc_ps = 52500,
-//.trfc_ps = 160000,
-//.twtr_ps = 7500,
-//.trtp_ps = 7500,
-//.refresh_rate_ps = 7800000,
-//.tfaw_ps = 37500,
-//};
+dimm_params_t ddr_raw_timing = {
+.n_ranks = 1,
+.rank_density = 256ul * 1024ul * 1024ul,
+.capacity = 256ul * 1024ul * 1024ul,
+.primary_sdram_width = 16,
+.ec_sdram_width = 0,
+.registered_dimm = 0,
+.mirrored_dimm = 0,
+.n_row_addr = 14,
+.n_col_addr = 10,
+.n_banks_per_sdram_device = 8,
+.edc_config = 0,
+.burst_lengths_bitmask = 0x0c,
+
+.tckmin_x_ps = 2500,
+	.caslat_x = 0x1e << 4,	/* 5,6,7,8 */ /// 6 waere hier richtig! ??? Debugging!
+.taa_ps = 15000,
+.twr_ps = 15000,
+.trcd_ps = 15000,
+.trrd_ps = 10000,
+.trp_ps = 15000,
+.tras_ps = 37500,
+.trc_ps = 52500,
+.trfc_ps = 160000,
+.twtr_ps = 7500,
+.trtp_ps = 7500,
+.refresh_rate_ps = 7800000,
+.tfaw_ps = 37500,
+};
 
 /*
  * Samsung K4B2G0846C-HCF8
@@ -123,35 +123,35 @@ DECLARE_GLOBAL_DATA_PTR;
 /*
  * Hynix H5TQ1G63DFR
  */
-dimm_params_t ddr_raw_timing = {
-	.n_ranks = 1,
-	.rank_density = 134217728u,
-	.capacity = 134217728u,
-	.primary_sdram_width = 16,
-	.ec_sdram_width = 0,
-	.registered_dimm = 0,
-	.mirrored_dimm = 0,
-	.n_row_addr = 13,
-	.n_col_addr = 10,
-	.n_banks_per_sdram_device = 8,
-	.edc_config = 0,
-	.burst_lengths_bitmask = 0x0c,
-
-	.tckmin_x_ps = 1875,
-	.caslat_x = 0x1e << 4,	// 5,6,7,8 
-	.taa_ps = 13125,
-	.twr_ps = 15000,
-	.trcd_ps = 13125,
-	.trrd_ps = 7500,
-	.trp_ps = 13125,
-	.tras_ps = 37500,
-	.trc_ps = 50625,
-	.trfc_ps = 160000,
-	.twtr_ps = 7500,
-	.trtp_ps = 7500,
-	.refresh_rate_ps = 7800000,
-	.tfaw_ps = 37500,
-};
+//dimm_params_t ddr_raw_timing = {
+//	.n_ranks = 1,
+//	.rank_density = 134217728u,
+//	.capacity = 134217728u,
+//	.primary_sdram_width = 16,
+//	.ec_sdram_width = 0,
+//	.registered_dimm = 0,
+//	.mirrored_dimm = 0,
+//	.n_row_addr = 13,
+//	.n_col_addr = 10,
+//	.n_banks_per_sdram_device = 8,
+//	.edc_config = 0,
+//	.burst_lengths_bitmask = 0x0c,
+//
+//	.tckmin_x_ps = 1875,
+//	.caslat_x = 0x1e << 4,	// 5,6,7,8 
+//	.taa_ps = 13125,
+//	.twr_ps = 15000,
+//	.trcd_ps = 13125,
+//	.trrd_ps = 7500,
+//	.trp_ps = 13125,
+//	.tras_ps = 37500,
+//	.trc_ps = 50625,
+//	.trfc_ps = 160000,
+//	.twtr_ps = 7500,
+//	.trtp_ps = 7500,
+//	.refresh_rate_ps = 7800000,
+//	.tfaw_ps = 37500,
+//};
 
 
 int fsl_ddr_get_dimm_params(dimm_params_t *pdimm,
